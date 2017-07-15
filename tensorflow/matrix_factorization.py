@@ -6,75 +6,67 @@ Created on Sat Jul 15 01:47:00 2017
 """
 ### Probabilistic matrix factorization ###
 
+# tensorflowはpipで入れないと最新バージョンにならない 
+
 import tensorflow as tf
 import edward as ed
 import numpy as np
-
 from edward.models import Normal
 
-ed.set_seed(42)
+# 中身を見るために必要！！
+ses = tf.Session()
 
-def build_dataset(U, V, n_samples):
-    N = U.shape[0]
-    M = V.shape[0]
-    K = U.shape[1]
-    X = []
-    sampled = set()
-    
-    for _ in range(n_samples):
-        i = np.random.randint(N)
-        j = np.random.randint(N)
-        while (i, j) in sampled:
-            i = np.random.randint(N)
-            j = np.random.randint(N)
-        sampled.add((i, j))
-        X.append([i, j])
-        
-    X = np.array(X)
-    y = np.random.normal(loc = np.sum(U[X[:, 0]] * V[X[:, 1]], axis=1), scale = 1.0)
-    
-    return X, y
-
-def train_test_split(X, y, test_ratio):
-    n_samples = X.shape[0]
-    test_indices = np.random.binomial(1, test_ratio, size = n_samples)
-    return X[test_indices==0], y[test_indices==0], X[test_indices==1], y[test_indices==1]
-    
-N = 30
-M = 40
-K = 5  # number of latent dimensions
-n_samples = 300
-U_true = np.random.normal(loc = 0.0, scale = 1.0, size = (N, K))
-V_true = np.random.normal(loc = 0.0, scale = 1.0, size = (M, K))
-X_data, y_data = build_dataset(U_true,  V_true, n_samples)
-
-test_ratio = 0.1
-X_train, y_train, X_test, y_test = train_test_split(X_data, y_data, test_ratio)
+# number set 
+N = 943 # 行数
+M = 1682 # 列数
+K = 30  # number of latent dimensions
 
 # Prepare a placeholder
-
+# indexを入れていく場所
 X_ph = tf.placeholder(tf.int32, [None, 2])
 
 # Building the model
-
+# 標準正規分布(loc:平均, scale:分散)
 U = Normal(loc = tf.zeros([N, K]), scale = tf.ones([N, K]))
 V = Normal(loc = tf.zeros([M, K]), scale = tf.ones([M, K]))
-y = Normal(loc = tf.reduce_sum(tf.gather(U, X_ph[:, 0]) * tf.gather(V, X_ph[:, 1]), axis=1), scale = tf.ones_like(tf.reduce_sum(tf.gather(U, X_ph[:, 0]) * tf.gather(V, X_ph[:, 1]), axis=1)))
+# 平均: -, 分散: 1
+y = Normal(loc = tf.reduce_sum(tf.gather(U, X_ph[:, 0]) * tf.gather(V, X_ph[:, 1]), axis=1), 
+           scale = tf.ones_like(tf.reduce_sum(tf.gather(U, X_ph[:, 0]) * tf.gather(V, X_ph[:, 1]), axis=1)))
 
 # Building the variational model
+# tf.softplus:分散が負の値にならない, tf.Variable:変数, 
+qU = Normal(loc = tf.Variable(tf.random_normal([N, K])), 
+            scale = tf.nn.softplus(tf.Variable(tf.random_normal([N, K]))))
+qV = Normal(loc = tf.Variable(tf.random_normal([M, K])), 
+            scale = tf.nn.softplus(tf.Variable(tf.random_normal([M, K]))))
 
-qU = Normal(loc = tf.Variable(tf.random_normal([N, K])), scale = tf.nn.softplus(tf.Variable(tf.random_normal([N, K]))))
-qV = Normal(loc = tf.Variable(tf.random_normal([M, K])), scale = tf.nn.softplus(tf.Variable(tf.random_normal([M, K]))))
-
+# 変数を実行させる前にはこの処理が必要
+#init = tf.global_variables_initializer()
+#ses.run(init)
+#ses.run(qU)
 # Inference
-
+# qU, qVを更新していく
 inference = ed.KLqp({U: qU, V: qV}, data = {X_ph: X_train, y: y_train})
 inference.run(n_iter = 1000)
 
 # Evaluation
-
 y_prior = y
-y_post = Normal(loc = tf.reduce_sum(tf.gather(qU, X_ph[:, 0]) * tf.gather(qV, X_ph[:, 1]), axis=1), scale = tf.ones_like(tf.reduce_sum(tf.gather(qU, X_ph[:, 0]) * tf.gather(qV, X_ph[:, 1]), axis=1)))
+y_post = Normal(loc = tf.reduce_sum(tf.gather(qU, X_ph[:, 0]) * tf.gather(qV, X_ph[:, 1]), axis=1), 
+                scale = tf.ones_like(tf.reduce_sum(tf.gather(qU, X_ph[:, 0]) * tf.gather(qV, X_ph[:, 1]), axis=1)))
 
 print("Mean squared error (prior): ", ed.evaluate("mean_squared_error", data = {X_ph: X_test, y_prior: y_test}))
 print("Mean squared error (posterior): ", ed.evaluate("mean_squared_error", data = {X_ph: X_test, y_post: y_test}))
+
+# numpyで調べてみる
+#b = np.random.randn(20000) #標準正規分布
+#b = np.random.randint(1,6,20000) #整数
+#c = np.sum((y_test - b) * (y_test - b))/20000
+
+test_ = Normal(loc = tf.reduce_sum(tf.gather(qU, X_test[:, 0]) * tf.gather(qV, X_test[:, 1]), axis=1), 
+                scale = tf.ones_like(tf.reduce_sum(tf.gather(qU, X_test[:, 0]) * tf.gather(qV, X_test[:, 1]), axis=1)))
+
+init = tf.global_variables_initializer()
+ses.run(init)
+b = np.array(ses.run(test_))
+c = np.sum((y_test - b) * (y_test - b))/20000
+print(c)
