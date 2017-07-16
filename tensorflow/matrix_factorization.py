@@ -2,7 +2,7 @@
 """
 Created on Sat Jul 15 01:47:00 2017
 
-@author: Rstudio
+@author: Takuto Kotsubo
 """
 ### Probabilistic matrix factorization ###
 
@@ -44,6 +44,7 @@ qV = Normal(loc = tf.Variable(tf.random_normal([M, K])),
 #init = tf.global_variables_initializer()
 #ses.run(init)
 #ses.run(qU)
+
 # Inference
 # qU, qVを更新していく
 inference = ed.KLqp({U: qU, V: qV}, data = {X_ph: X_train, y: y_train})
@@ -57,16 +58,42 @@ y_post = Normal(loc = tf.reduce_sum(tf.gather(qU, X_ph[:, 0]) * tf.gather(qV, X_
 print("Mean squared error (prior): ", ed.evaluate("mean_squared_error", data = {X_ph: X_test, y_prior: y_test}))
 print("Mean squared error (posterior): ", ed.evaluate("mean_squared_error", data = {X_ph: X_test, y_post: y_test}))
 
-# numpyで調べてみる
-#b = np.random.randn(20000) #標準正規分布
-#b = np.random.randint(1,6,20000) #整数
-#c = np.sum((y_test - b) * (y_test - b))/20000
-
-test_ = Normal(loc = tf.reduce_sum(tf.gather(qU, X_test[:, 0]) * tf.gather(qV, X_test[:, 1]), axis=1), 
-                scale = tf.ones_like(tf.reduce_sum(tf.gather(qU, X_test[:, 0]) * tf.gather(qV, X_test[:, 1]), axis=1)))
-
-init = tf.global_variables_initializer()
-ses.run(init)
-b = np.array(ses.run(test_))
+"""
+numpyで調べてみる
+b = np.random.randn(20000) #標準正規分布
+b = np.random.randint(1,6,20000) #整数
 c = np.sum((y_test - b) * (y_test - b))/20000
-print(c)
+"""
+# edward.evaluate関数調査
+# これがないと予測した回答見れないよ。。。。
+from edward.models import Bernoulli, Binomial, Categorical, \
+                           Multinomial, OneHotCategorical
+from edward.util import check_data, get_session  
+
+ses = get_session()
+n_samples = 500
+
+#事前分布か更新した事後分布を使う
+data = {X_ph: X_test, y_prior: y_test}
+data = {X_ph: X_test, y_post: y_test}
+
+#ブラックボックス
+keys = [key for key in six.iterkeys(data) if not
+        isinstance(key, tf.Tensor) or "Placeholder" not in key.op.type]
+output_key = keys[0]
+feed_dict = {key: value for key, value in six.iteritems(data)
+             if isinstance(key, tf.Tensor) and "Placeholder" in key.op.type}
+y_true = data[output_key]
+binary_discrete = (Bernoulli, Binomial)
+categorical_discrete = (Categorical, Multinomial, OneHotCategorical)
+
+# 予測値算出
+y_pred = [ses.run(output_key, feed_dict) for _ in range(n_samples)]
+# tf.cast:型変換
+y_pred = tf.cast(tf.add_n(y_pred), y_pred[0].dtype)/tf.cast(n_samples, y_pred[0].dtype)
+pred_ans = np.array(ses.run(y_pred))
+
+# MSEを求める
+ans = tf.reduce_mean(tf.square(y_pred - y_true))
+ses.run(ans)
+# mse = 0.89294451
