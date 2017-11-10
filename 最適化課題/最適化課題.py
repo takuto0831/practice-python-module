@@ -10,16 +10,16 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 # 関数
 def f(x):
-    return 10*(x[0]**2 - x[1])**2 + (x[0] - 1)**2
+    return 4*x[0]**2 + 2*x[0]*x[1] + 2*x[1]**2 - 2*x[0] - 4*x[1]
 
 # 導関数
 def df(x):
-    return np.array([40*x[0]*(x[0]**2 - x[1]) + 2*x[0] - 2,
-                     -20*x[0]**2 + 20*x[1]])
+    return np.array([8*x[0] + 2*x[1] -2,
+                     2*x[0] + 4*x[1] -4])
 # ヘッセ行列
-def hesse(x):
-    return np.array([[float(120*x[0]**2 - 40*x[1] + 2),float(-40*x[0])],
-                     [float(-40*x[0]),20]])
+def hesse():
+    return np.array([[8.0,2.0]
+                     [2.0,4.0]])
     
 # Armijo条件
 def armijo_method(x,d):
@@ -38,9 +38,9 @@ def BFGS(beta,tmp_new,tmp):
     return tmp_beta
  
 # 初期値
-start_point = np.array([[0],[2]])
+start_point = np.array([[-1],[3]])
 # 正定値対称な初期行列
-start_beta = np.array([[1,-2],[-2,6]])
+start_beta = np.array([[1,0],[0,1]])
 
 # 最急降下法
 def gradient_descent_method(point):
@@ -48,7 +48,7 @@ def gradient_descent_method(point):
     tmp = point # 点の移動用
     history = point # 数値を記録
     iteration = 1000 # 最大繰り返し回数
-    
+
     for i in range(iteration):
         d = -df(tmp) # 探索方向
         alpha = armijo_method(tmp,d) # ステップ幅
@@ -79,7 +79,7 @@ def quasi_newton_method(point,beta):
     eps  = 1e-5 # 終了条件
     tmp = point # 点の移動用
     tmp_b = beta # 正定値行列の変更用
-     
+
     history = point # 数値を記録
     iteration = 1000 # 最大繰り返し回数
     
@@ -93,6 +93,28 @@ def quasi_newton_method(point,beta):
         tmp = tmp_new
         history = np.concatenate([history,tmp],axis = 1)        
     return history.T
+from fractions import Fraction
+# 準ニュートン法
+def quasi_newton_method_real(point,beta):
+    eps  = 1e-5 # 終了条件
+    tmp = point # 点の移動用
+    tmp_b = beta # 正定値行列の変更用
+    A = np.array([[4,1],
+                  [1,2]])     
+    history = point # 数値を記録
+    iteration = 1 # 最大繰り返し回数
+    
+    for i in range(iteration):
+        d = - np.dot(np.linalg.inv(tmp_b),df(tmp)) # 探索方向
+        alpha = - np.dot(d.T,df(tmp)) / np.dot(np.dot(d.T,A),d) # ステップ幅
+        tmp_new = tmp + alpha*d
+        if np.abs(np.linalg.norm(tmp-tmp_new)) < eps:
+            break
+        tmp_b = BFGS(tmp_b,tmp_new,tmp) # betaの更新
+        tmp = tmp_new
+        history = np.concatenate([history,tmp],axis = 1)        
+    return history.T
+
 
 
 data_gradient = gradient_descent_method(start_point)
