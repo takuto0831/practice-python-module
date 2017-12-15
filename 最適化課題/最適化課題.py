@@ -8,8 +8,12 @@ import numpy as np
 from sympy import *
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 # 関数
 def f(x):
+    H = np.array([[1,-1,-1],
+                  [-1,2,3],
+                  [-1,3,5]])
     return 4*x[0]**2 + 2*x[0]*x[1] + 2*x[1]**2 - 2*x[0] - 4*x[1]
 
 # 導関数
@@ -134,5 +138,6 @@ for i in range(len(data_newton)):
     plt.plot(i,f(data_newton[i]),"o")
 for i in range(len(data_quasi_newton)):
     plt.plot(i,f(data_quasi_newton[i]),"o")
+    
     
     
