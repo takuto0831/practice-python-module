@@ -17,6 +17,7 @@ tensorflow tutorialのサンプルコード
 
 ```
 ├── Matrix_Factorization
+│   ├── TensorFlowMF_Lingbal_Comp.py
 │   ├── __pycache__
 │   │   └── read_data.cpython-36.pyc
 │   ├── item_base_recommend.py
@@ -31,6 +32,7 @@ tensorflow tutorialのサンプルコード
 ├── Optimisation
 │   ├── kadai.ipynb
 │   └── kadai.py
+├── README.md
 ├── Read_csv_for_movie_lens
 │   └── read_data.py
 └── Tensorflow
