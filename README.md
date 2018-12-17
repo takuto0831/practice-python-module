@@ -9,7 +9,7 @@ python moduleの練習コード / 各種作成したscriptの保存フォルダ
 
 - Optimisation: 
 
-最急降下法, ニュートン法, 準ニュートン法の実装
+最急降下法, ニュートン法, 準ニュートン法, 確率的勾配降法(SGD)の実装
 
 - Tensorflow:
 
