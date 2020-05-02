@@ -1,7 +1,7 @@
-# practice_pyhton_module
+# practice-pyhton-module
 python moduleの練習コード / 各種作成したscriptの保存フォルダ
 
-## 内容について
+## contents
 
 - Matrix_Factorization
 
@@ -14,6 +14,8 @@ python moduleの練習コード / 各種作成したscriptの保存フォルダ
 - Tensorflow:
 
 tensorflow tutorialのサンプルコード
+
+## Dirctory schema
 
 ```
 ├── Matrix_Factorization
