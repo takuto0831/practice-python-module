@@ -10,6 +10,11 @@
 
 - openCV: sample code
 
+- UsefulCodings: some good technics / learn objecte oriented / algorithm technics
+
+    - [Basic Skill for Data scientist](http://kysmo.hatenablog.jp/entry/2017/12/11/134537)
+    - [itertools](https://docs.python.org/ja/3/library/itertools.html)
+    
 ## Dirctory schema
 
 
@@ -39,3 +44,4 @@
     └── script
         └── test_opencv.py
 ```
+
