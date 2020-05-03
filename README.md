@@ -13,7 +13,9 @@
 - UsefulCodings: some good technics / learn objecte oriented / algorithm technics
 
     - [Recursive function](UsefulCondings/script/betterCodings.py): 
-    [factorial function](https://qiita.com/drken/items/23a4f604fa3f505dd5ad)
+    
+    [factorial function, type annotation](https://qiita.com/drken/items/23a4f604fa3f505dd5ad)
+    
     [dynamic programming, subset problem](https://qiita.com/drken/items/23a4f604fa3f505dd5ad)
     
     - [Basic Skill for Data scientist](http://kysmo.hatenablog.jp/entry/2017/12/11/134537)
