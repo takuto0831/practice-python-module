@@ -18,6 +18,8 @@
     
     [Recursive function, dynamic programming, subset problem](https://qiita.com/drken/items/23a4f604fa3f505dd5ad)
     
+    [python technics for Data scientist](http://kysmo.hatenablog.jp/entry/2017/12/11/134537)
+   
     - [Basic Skill for Data scientist](http://kysmo.hatenablog.jp/entry/2017/12/11/134537)
     - [itertools](https://docs.python.org/ja/3/library/itertools.html)
     
