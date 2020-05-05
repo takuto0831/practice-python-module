@@ -59,6 +59,17 @@ def subsetSumShow(number: int, target: int, vec: list) -> str:
   if subsetSum(number, target, vec, history): print('yes man')
   else: print('no man')
 
+# recursive function with dfs (depth-first search)
+def dfsShow(vec: list):
+	if len(vec) == 10:
+		print(vec)
+		return
+	for num in range(2):
+		# back track
+		vec.append(num) # add new number
+		dfs(vec) # call next..
+		vec.pop() # remove new number
+
 #### logging function
 from logging import getLogger, StreamHandler, Formatter, DEBUG
 
@@ -96,6 +107,11 @@ def countUpShow(number:int, func):
     print(Iter)
     if Iter == number:
       break
+
+# itertools
+def itertoolShow():
+	import itertools
+	print(list(itertools.combinations_with_replacement(range(5), 3)))
 
 # enumerate function
 def enumerateShow():
